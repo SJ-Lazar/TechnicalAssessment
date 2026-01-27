@@ -1,0 +1,26 @@
+
+The solution is organized into the following projects:
+
+.NET 9 Will be used for all projects.
+
+The Solution Structure:
+
+Database 
+ - SQL Lite DB 
+ 
+ Web Service 
+ - ASP.NET Core Web API
+
+ Web Interface
+ - Blazor Server App
+
+ Shared Library
+ - Models and DTOs
+ - Unit Tests
+ - Common utilities
+
+ Documentation
+ - ReadMe Files
+ - Software Architecture
+ - API Documentation
+ - User Guides
