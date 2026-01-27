@@ -1,9 +1,10 @@
-﻿using SharedLibrary.PermissionsModels;
+﻿using SharedLibrary.Base;
+using SharedLibrary.PermissionsModels;
 using SharedLibrary.UserModels;
 
 namespace SharedLibrary.GroupModels;
 
-public class Group
+public class Group : BaseEntity
 {
     public int Id { get; set; }
     public string? Name { get; set; }
