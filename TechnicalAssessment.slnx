@@ -5,4 +5,6 @@
     <File Path="SolutionStructure.txt" />
   </Folder>
   <Project Path="DataAccess/SharedLibrary.csproj" Id="d088ead8-adc6-41e9-8411-7267df17f1fd" />
+  <Project Path="WebInterface/WebInterface.csproj" Id="379a7844-33fe-4598-802a-a84c72e80393" />
+  <Project Path="WebService/WebService.csproj" Id="e04895f3-125b-4ce7-8ebb-f887924333f9" />
 </Solution>
