@@ -1,6 +1,8 @@
 <Solution>
   <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
     <File Path="ReadMe.txt" />
     <File Path="SolutionStructure.txt" />
   </Folder>
+  <Project Path="DataAccess/SharedLibrary.csproj" Id="d088ead8-adc6-41e9-8411-7267df17f1fd" />
 </Solution>
