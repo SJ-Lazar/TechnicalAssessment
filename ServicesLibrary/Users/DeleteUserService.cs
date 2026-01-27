@@ -1,10 +1,49 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.EntityFrameworkCore;
+using SharedLibrary.Contexts;
+using SharedLibrary.UserModels;
 
 namespace ServicesLibrary.Users;
-internal class DeleteUserService
+
+public class DeleteUserService
 {
+    private readonly UserContext _context;
+
+    public DeleteUserService(UserContext context) => _context = context;
+
+    public async Task<User> ExecuteAsync(int userId)
+    {
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Id == userId && !u.Deleted);
+
+        ThrowExceptionIfUserNotFound(userId, user);
+
+        MarkUserAsDeleted(user);
+
+        await _context.SaveChangesAsync();
+
+        return user;
+    }
+
+
+    #region Private Functions
+
+    private static void MarkUserAsDeleted(User? user)
+    {
+        if (user is null)
+        {
+            throw new ArgumentNullException(nameof(user), "User is null.");
+        }
+
+        user.Deleted = true;
+        user.Active = false;
+        user.UpdatedAt = DateTime.UtcNow;
+    }
+    private static void ThrowExceptionIfUserNotFound(int userId, User? user)
+    {
+        if (user == null)
+        {
+            throw new InvalidOperationException($"User with ID {userId} not found or has already been deleted");
+        }
+    } 
+    #endregion
 }
