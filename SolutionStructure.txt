@@ -15,9 +15,10 @@ Database
  - Blazor Server App
 
  Shared Library
- - Models and DTOs
- - Unit Tests
- - Common utilities
+ - Models 
+
+ Shared Services 
+ - 
 
  Documentation
  - ReadMe Files

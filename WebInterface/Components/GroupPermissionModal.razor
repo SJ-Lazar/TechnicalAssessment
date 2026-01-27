@@ -1,0 +1,113 @@
+@using ServicesLibrary.Groups.Dtos
+@using SharedLibrary
+
+<div class="modal-overlay" @onclick="OnClose">
+    <div class="modal-content group-permission-modal" @onclick:stopPropagation="true">
+        <div class="modal-header">
+            <h2>@Group.Name - Permissions</h2>
+            <button class="btn-close" @onclick="OnClose">×</button>
+        </div>
+
+        <div class="modal-body">
+            <!-- Current Permissions -->
+            <div class="permissions-section">
+                <h3>Current Permissions (@Group.Permissions.Count)</h3>
+                @if (Group.Permissions.Any())
+                {
+                    <div class="permissions-list">
+                        @foreach (var permission in Group.Permissions.OrderBy(p => p.Name))
+                        {
+                            <div class="permission-item">
+                                <div class="permission-info">
+                                    <span class="permission-icon">??</span>
+                                    <span class="permission-name">@permission.Name</span>
+                                </div>
+                                <button class="btn-remove" 
+                                        @onclick="@(() => OnRemovePermission.InvokeAsync(permission.Id))"
+                                        title="Remove permission">
+                                    Remove
+                                </button>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="no-items">No permissions assigned to this group.</div>
+                }
+            </div>
+
+            <!-- Available Permissions -->
+            <div class="permissions-section">
+                <h3>Available Permissions (@AvailablePermissions.Count)</h3>
+                @if (AvailablePermissions.Any())
+                {
+                    <div class="permissions-list">
+                        @foreach (var permission in AvailablePermissions.OrderBy(p => p.Name))
+                        {
+                            <div class="permission-item available">
+                                <div class="permission-info">
+                                    <span class="permission-icon">?</span>
+                                    <span class="permission-name">@permission.Name</span>
+                                </div>
+                                <button class="btn-add" 
+                                        @onclick="@(() => OnAddPermission.InvokeAsync(permission.Id))"
+                                        title="Add permission">
+                                    Add
+                                </button>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="no-items">All available permissions are already assigned.</div>
+                }
+            </div>
+
+            <!-- Group Users -->
+            <div class="users-section">
+                <h3>Users in this Group (@Group.Users.Count)</h3>
+                @if (Group.Users.Any())
+                {
+                    <div class="users-list">
+                        @foreach (var user in Group.Users.OrderBy(u => u.Email))
+                        {
+                            <div class="user-item">
+                                <span class="user-email">@user.Email</span>
+                                <span class="user-status @(user.Active ? "active" : "inactive")">
+                                    @(user.Active ? "Active" : "Inactive")
+                                </span>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="no-items">No users in this group.</div>
+                }
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn btn-secondary" @onclick="OnClose">Close</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public GroupDetailDto Group { get; set; } = null!;
+
+    [Parameter, EditorRequired]
+    public List<PermissionDto> AvailablePermissions { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<int> OnAddPermission { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OnRemovePermission { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+}

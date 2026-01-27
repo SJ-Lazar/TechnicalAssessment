@@ -1,0 +1,66 @@
+@using SharedLibrary
+
+
+<div class="user-card">
+    <div class="user-header">
+        <div class="user-id">ID: @User.Id</div>
+        <div class="user-status @(User.Active ? "active" : "inactive")">
+            @(User.Active ? "Active" : "Inactive")
+        </div>
+    </div>
+
+    <div class="user-email">@User.Email</div>
+
+    <div class="user-groups">
+        <div class="groups-label">Groups:</div>
+        @if (User.Groups.Any())
+        {
+            <div class="groups-list">
+                @foreach (var group in User.Groups)
+                {
+                    <span class="group-badge" @onclick="@(() => OnGroupClick.InvokeAsync(group.Id))" 
+                          title="Click to view group permissions">
+                        @group.Name
+                    </span>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="no-groups">No groups assigned</div>
+        }
+    </div>
+
+    <div class="user-dates">
+        <div class="date-item">
+            <span class="date-label">Created:</span>
+            <span class="date-value">@User.CreatedAt.ToString("yyyy-MM-dd HH:mm")</span>
+        </div>
+        @if (User.UpdatedAt.HasValue)
+        {
+            <div class="date-item">
+                <span class="date-label">Updated:</span>
+                <span class="date-value">@User.UpdatedAt.Value.ToString("yyyy-MM-dd HH:mm")</span>
+            </div>
+        }
+    </div>
+
+    <div class="user-actions">
+        <button class="btn-action btn-edit" @onclick="OnEdit">Edit</button>
+        <button class="btn-action btn-delete" @onclick="OnDelete">Delete</button>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public UserDto User { get; set; } = null!;
+
+    [Parameter]
+    public EventCallback OnEdit { get; set; }
+
+    [Parameter]
+    public EventCallback OnDelete { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OnGroupClick { get; set; }
+}

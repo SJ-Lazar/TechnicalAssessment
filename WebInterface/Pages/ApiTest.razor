@@ -1,0 +1,318 @@
+@page "/api-test"
+@inject UserApiService UserApi
+@inject HttpClient Http
+
+<PageTitle>API Testing</PageTitle>
+
+<div class="api-test-container">
+    <div class="header">
+        <h1>API Testing Dashboard</h1>
+        <div class="api-status">
+            <span class="status-label">API Status:</span>
+            <span class="status-indicator @(isApiHealthy ? "healthy" : "unhealthy")">
+                @(isApiHealthy ? "? Connected" : "? Disconnected")
+            </span>
+            <button class="btn btn-small" @onclick="CheckApiHealth">Test Connection</button>
+        </div>
+    </div>
+
+    <div class="test-sections">
+        <!-- GET All Users Test -->
+        <div class="test-section">
+            <div class="test-header">
+                <span class="http-method get">GET</span>
+                <span class="endpoint">/api/users</span>
+                <button class="btn btn-primary" @onclick="TestGetUsers">Execute</button>
+            </div>
+            @if (getUsersResponse != null)
+            {
+                <div class="response-section">
+                    <div class="response-header">
+                        <span>Response (@getUsersStatusCode)</span>
+                        <span class="response-time">@getUsersResponseTime</span>
+                    </div>
+                    <pre class="response-body">@getUsersResponse</pre>
+                </div>
+            }
+        </div>
+
+        <!-- GET User by ID Test -->
+        <div class="test-section">
+            <div class="test-header">
+                <span class="http-method get">GET</span>
+                <span class="endpoint">/api/users/{id}</span>
+                <div class="inline-form">
+                    <input type="number" class="form-control-inline" @bind="getUserId" placeholder="User ID" />
+                    <button class="btn btn-primary" @onclick="TestGetUser">Execute</button>
+                </div>
+            </div>
+            @if (getUserResponse != null)
+            {
+                <div class="response-section">
+                    <div class="response-header">
+                        <span>Response (@getUserStatusCode)</span>
+                        <span class="response-time">@getUserResponseTime</span>
+                    </div>
+                    <pre class="response-body">@getUserResponse</pre>
+                </div>
+            }
+        </div>
+
+        <!-- POST Create User Test -->
+        <div class="test-section">
+            <div class="test-header">
+                <span class="http-method post">POST</span>
+                <span class="endpoint">/api/users</span>
+                <button class="btn btn-primary" @onclick="TestCreateUser">Execute</button>
+            </div>
+            <div class="request-body">
+                <label>Request Body:</label>
+                <textarea class="form-control" @bind="createUserJson" rows="6" placeholder='{"email": "test@example.com", "groupIds": [1, 2]}'></textarea>
+            </div>
+            @if (createUserResponse != null)
+            {
+                <div class="response-section">
+                    <div class="response-header">
+                        <span>Response (@createUserStatusCode)</span>
+                        <span class="response-time">@createUserResponseTime</span>
+                    </div>
+                    <pre class="response-body">@createUserResponse</pre>
+                </div>
+            }
+        </div>
+
+        <!-- PUT Update User Test -->
+        <div class="test-section">
+            <div class="test-header">
+                <span class="http-method put">PUT</span>
+                <span class="endpoint">/api/users/{id}</span>
+                <div class="inline-form">
+                    <input type="number" class="form-control-inline" @bind="updateUserId" placeholder="User ID" />
+                    <button class="btn btn-primary" @onclick="TestUpdateUser">Execute</button>
+                </div>
+            </div>
+            <div class="request-body">
+                <label>Request Body:</label>
+                <textarea class="form-control" @bind="updateUserJson" rows="6" placeholder='{"email": "updated@example.com", "groupIds": [1], "active": true}'></textarea>
+            </div>
+            @if (updateUserResponse != null)
+            {
+                <div class="response-section">
+                    <div class="response-header">
+                        <span>Response (@updateUserStatusCode)</span>
+                        <span class="response-time">@updateUserResponseTime</span>
+                    </div>
+                    <pre class="response-body">@updateUserResponse</pre>
+                </div>
+            }
+        </div>
+
+        <!-- DELETE User Test -->
+        <div class="test-section">
+            <div class="test-header">
+                <span class="http-method delete">DELETE</span>
+                <span class="endpoint">/api/users/{id}</span>
+                <div class="inline-form">
+                    <input type="number" class="form-control-inline" @bind="deleteUserId" placeholder="User ID" />
+                    <button class="btn btn-danger" @onclick="TestDeleteUser">Execute</button>
+                </div>
+            </div>
+            @if (deleteUserResponse != null)
+            {
+                <div class="response-section">
+                    <div class="response-header">
+                        <span>Response (@deleteUserStatusCode)</span>
+                        <span class="response-time">@deleteUserResponseTime</span>
+                    </div>
+                    <pre class="response-body">@deleteUserResponse</pre>
+                </div>
+            }
+        </div>
+
+        <!-- GET Groups Test -->
+        <div class="test-section">
+            <div class="test-header">
+                <span class="http-method get">GET</span>
+                <span class="endpoint">/api/users/groups</span>
+                <button class="btn btn-primary" @onclick="TestGetGroups">Execute</button>
+            </div>
+            @if (getGroupsResponse != null)
+            {
+                <div class="response-section">
+                    <div class="response-header">
+                        <span>Response (@getGroupsStatusCode)</span>
+                        <span class="response-time">@getGroupsResponseTime</span>
+                    </div>
+                    <pre class="response-body">@getGroupsResponse</pre>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool isApiHealthy = false;
+    
+    // GET Users
+    private string? getUsersResponse;
+    private string? getUsersStatusCode;
+    private string? getUsersResponseTime;
+    
+    // GET User
+    private int getUserId = 1;
+    private string? getUserResponse;
+    private string? getUserStatusCode;
+    private string? getUserResponseTime;
+    
+    // POST Create User
+    private string createUserJson = "{\n  \"email\": \"test@example.com\",\n  \"groupIds\": [1, 2]\n}";
+    private string? createUserResponse;
+    private string? createUserStatusCode;
+    private string? createUserResponseTime;
+    
+    // PUT Update User
+    private int updateUserId = 1;
+    private string updateUserJson = "{\n  \"email\": \"updated@example.com\",\n  \"groupIds\": [1],\n  \"active\": true\n}";
+    private string? updateUserResponse;
+    private string? updateUserStatusCode;
+    private string? updateUserResponseTime;
+    
+    // DELETE User
+    private int deleteUserId;
+    private string? deleteUserResponse;
+    private string? deleteUserStatusCode;
+    private string? deleteUserResponseTime;
+    
+    // GET Groups
+    private string? getGroupsResponse;
+    private string? getGroupsStatusCode;
+    private string? getGroupsResponseTime;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CheckApiHealth();
+    }
+
+    private async Task CheckApiHealth()
+    {
+        try
+        {
+            var response = await Http.GetAsync("api/users/groups");
+            isApiHealthy = response.IsSuccessStatusCode;
+        }
+        catch
+        {
+            isApiHealthy = false;
+        }
+    }
+
+    private async Task TestGetUsers()
+    {
+        var startTime = DateTime.Now;
+        try
+        {
+            var response = await Http.GetAsync("api/users");
+            getUsersStatusCode = $"{(int)response.StatusCode} {response.StatusCode}";
+            getUsersResponse = await response.Content.ReadAsStringAsync();
+            getUsersResponseTime = $"{(DateTime.Now - startTime).TotalMilliseconds:F0}ms";
+        }
+        catch (Exception ex)
+        {
+            getUsersStatusCode = "Error";
+            getUsersResponse = ex.Message;
+            getUsersResponseTime = $"{(DateTime.Now - startTime).TotalMilliseconds:F0}ms";
+        }
+    }
+
+    private async Task TestGetUser()
+    {
+        var startTime = DateTime.Now;
+        try
+        {
+            var response = await Http.GetAsync($"api/users/{getUserId}");
+            getUserStatusCode = $"{(int)response.StatusCode} {response.StatusCode}";
+            getUserResponse = await response.Content.ReadAsStringAsync();
+            getUserResponseTime = $"{(DateTime.Now - startTime).TotalMilliseconds:F0}ms";
+        }
+        catch (Exception ex)
+        {
+            getUserStatusCode = "Error";
+            getUserResponse = ex.Message;
+            getUserResponseTime = $"{(DateTime.Now - startTime).TotalMilliseconds:F0}ms";
+        }
+    }
+
+    private async Task TestCreateUser()
+    {
+        var startTime = DateTime.Now;
+        try
+        {
+            var content = new StringContent(createUserJson, System.Text.Encoding.UTF8, "application/json");
+            var response = await Http.PostAsync("api/users", content);
+            createUserStatusCode = $"{(int)response.StatusCode} {response.StatusCode}";
+            createUserResponse = await response.Content.ReadAsStringAsync();
+            createUserResponseTime = $"{(DateTime.Now - startTime).TotalMilliseconds:F0}ms";
+        }
+        catch (Exception ex)
+        {
+            createUserStatusCode = "Error";
+            createUserResponse = ex.Message;
+            createUserResponseTime = $"{(DateTime.Now - startTime).TotalMilliseconds:F0}ms";
+        }
+    }
+
+    private async Task TestUpdateUser()
+    {
+        var startTime = DateTime.Now;
+        try
+        {
+            var content = new StringContent(updateUserJson, System.Text.Encoding.UTF8, "application/json");
+            var response = await Http.PutAsync($"api/users/{updateUserId}", content);
+            updateUserStatusCode = $"{(int)response.StatusCode} {response.StatusCode}";
+            updateUserResponse = await response.Content.ReadAsStringAsync();
+            updateUserResponseTime = $"{(DateTime.Now - startTime).TotalMilliseconds:F0}ms";
+        }
+        catch (Exception ex)
+        {
+            updateUserStatusCode = "Error";
+            updateUserResponse = ex.Message;
+            updateUserResponseTime = $"{(DateTime.Now - startTime).TotalMilliseconds:F0}ms";
+        }
+    }
+
+    private async Task TestDeleteUser()
+    {
+        var startTime = DateTime.Now;
+        try
+        {
+            var response = await Http.DeleteAsync($"api/users/{deleteUserId}");
+            deleteUserStatusCode = $"{(int)response.StatusCode} {response.StatusCode}";
+            deleteUserResponse = response.IsSuccessStatusCode ? "User deleted successfully" : await response.Content.ReadAsStringAsync();
+            deleteUserResponseTime = $"{(DateTime.Now - startTime).TotalMilliseconds:F0}ms";
+        }
+        catch (Exception ex)
+        {
+            deleteUserStatusCode = "Error";
+            deleteUserResponse = ex.Message;
+            deleteUserResponseTime = $"{(DateTime.Now - startTime).TotalMilliseconds:F0}ms";
+        }
+    }
+
+    private async Task TestGetGroups()
+    {
+        var startTime = DateTime.Now;
+        try
+        {
+            var response = await Http.GetAsync("api/users/groups");
+            getGroupsStatusCode = $"{(int)response.StatusCode} {response.StatusCode}";
+            getGroupsResponse = await response.Content.ReadAsStringAsync();
+            getGroupsResponseTime = $"{(DateTime.Now - startTime).TotalMilliseconds:F0}ms";
+        }
+        catch (Exception ex)
+        {
+            getGroupsStatusCode = "Error";
+            getGroupsResponse = ex.Message;
+            getGroupsResponseTime = $"{(DateTime.Now - startTime).TotalMilliseconds:F0}ms";
+        }
+    }
+}

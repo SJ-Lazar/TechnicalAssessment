@@ -1,0 +1,103 @@
+@using ServicesLibrary.Groups.Dtos
+@using SharedLibrary.DTOs
+
+<div class="modal-overlay" @onclick="OnClose">
+    <div class="modal-content" @onclick:stopPropagation>
+        <div class="modal-header">
+            <h2>@(User == null ? "Add New User" : "Edit User")</h2>
+            <button class="close-btn" @onclick="OnClose">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            <EditForm Model="@formData" OnValidSubmit="HandleSubmit">
+                <DataAnnotationsValidator />
+                
+                <div class="form-group">
+                    <label for="email">Email Address *</label>
+                    <InputText id="email" class="form-control" @bind-Value="formData.Email" />
+                    <ValidationMessage For="@(() => formData.Email)" />
+                </div>
+
+                @if (User != null)
+                {
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <InputCheckbox @bind-Value="formData.Active" />
+                            <span>Active</span>
+                        </label>
+                    </div>
+                }
+
+                <div class="form-group">
+                    <label>Groups</label>
+                    <div class="group-checkboxes">
+                        @foreach (var group in Groups)
+                        {
+                            <label class="checkbox-label">
+                                <input type="checkbox" 
+                                       checked="@formData.GroupIds.Contains(group.Id)"
+                                       @onchange="@(e => ToggleGroup(group.Id, (bool)e.Value!))" />
+                                <span>@group.Name</span>
+                            </label>
+                        }
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="OnClose">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        @(User == null ? "Create User" : "Update User")
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public UserDto? User { get; set; }
+
+    [Parameter, EditorRequired]
+    public List<GroupDto> Groups { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<UserFormData> OnSave { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    private UserFormData formData = new();
+
+    protected override void OnParametersSet()
+    {
+        if (User != null)
+        {
+            formData = new UserFormData
+            {
+                Email = User.Email,
+                Active = User.Active,
+                GroupIds = User.Groups.Select(g => g.Id).ToList()
+            };
+        }
+        else
+        {
+            formData = new UserFormData();
+        }
+    }
+
+    private void ToggleGroup(int groupId, bool isChecked)
+    {
+        if (isChecked)
+        {
+            if (!formData.GroupIds.Contains(groupId))
+                formData.GroupIds.Add(groupId);
+        }
+        else
+        {
+            formData.GroupIds.Remove(groupId);
+        }
+    }
+
+    private async Task HandleSubmit() => await OnSave.InvokeAsync(formData);
+}

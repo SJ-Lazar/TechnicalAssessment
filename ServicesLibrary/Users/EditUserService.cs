@@ -37,12 +37,18 @@ public class EditUserService
     }
 
     #region Private Functions
-    private static void UpdateEmail(string email, User? user) => user.Email = email;
+    private static void UpdateEmail(string? email, User? user)
+    {
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            user!.Email = email;
+        }
+    }
     private async Task UpdateGroups(List<int>? groupIds, User? user)
     {
         if (groupIds != null)
         {
-            user.Groups.Clear();
+            user!.Groups.Clear();
 
             if (groupIds.Any())
             {
@@ -67,11 +73,11 @@ public class EditUserService
     private static void UpdateActiveStatus(bool? active, User? user)
     {
         if (active.HasValue)
-            user.Active = active.Value;
+            user!.Active = active.Value;
     }
-    private static void ThrowExceptionUserEmailAlreadyExists(string email, bool emailExists)
+    private static void ThrowExceptionUserEmailAlreadyExists(string? email, bool emailExists)
     {
-        if (emailExists)
+        if (emailExists && !string.IsNullOrWhiteSpace(email))
             throw new InvalidOperationException($"Email '{email}' is already in use");
     }
     private static void ThrowExceptionIfUserNotFound(int userId, User? user)
