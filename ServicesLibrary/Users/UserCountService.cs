@@ -15,6 +15,7 @@ public class UserCountService
     public async Task<int> GetTotalUserCountAsync()
     {
         return await _context.Users
+            .AsNoTracking()
             .Where(u => !u.Deleted)
             .CountAsync();
     }
@@ -24,7 +25,9 @@ public class UserCountService
     /// </summary>
     public async Task<int> GetTotalUserCountIncludingDeletedAsync()
     {
-        return await _context.Users.CountAsync();
+        return await _context.Users
+            .AsNoTracking()
+            .CountAsync();
     }
 
     /// <summary>
@@ -33,6 +36,7 @@ public class UserCountService
     public async Task<int> GetActiveUserCountAsync()
     {
         return await _context.Users
+            .AsNoTracking()
             .Where(u => u.Active && !u.Deleted)
             .CountAsync();
     }
@@ -44,6 +48,7 @@ public class UserCountService
     public async Task<Dictionary<int, int>> GetUserCountPerGroupAsync()
     {
         var groupCounts = await _context.Groups
+            .AsNoTracking()
             .Where(g => !g.Deleted)
             .Select(g => new
             {
@@ -62,6 +67,7 @@ public class UserCountService
     public async Task<Dictionary<string, int>> GetUserCountPerGroupWithNamesAsync()
     {
         var groupCounts = await _context.Groups
+            .AsNoTracking()
             .Where(g => !g.Deleted)
             .Select(g => new
             {
@@ -79,6 +85,7 @@ public class UserCountService
     public async Task<int> GetUserCountForGroupAsync(int groupId)
     {
         var group = await _context.Groups
+            .AsNoTracking()
             .Include(g => g.Users)
             .FirstOrDefaultAsync(g => g.Id == groupId && !g.Deleted);
 

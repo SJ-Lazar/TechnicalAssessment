@@ -4,58 +4,53 @@ using ServicesLibrary.Users;
 using SharedLibrary.Contexts;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
 builder.Services.AddControllers();
 
-// Configure SQLite
+#region ConnectionStrings
 builder.Services.AddDbContext<UserContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection") 
-        ?? "Data Source=users.db"));
+options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")
+?? "Data Source=users.db"));
+#endregion
 
-// Register services
+#region Library Services
 builder.Services.AddScoped<AddUserService>();
 builder.Services.AddScoped<EditUserService>();
 builder.Services.AddScoped<DeleteUserService>();
 builder.Services.AddScoped<UserCountService>();
 builder.Services.AddScoped<GroupPermissionService>();
+#endregion
 
-// Configure CORS for Blazor WebAssembly
+#region Web Service Registrations
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowBlazorWasm",
-        policy => policy
-            .WithOrigins(
-                "https://localhost:7166",  // WebInterface HTTPS
-                "http://localhost:5132")   // WebInterface HTTP
-            .AllowAnyMethod()
-            .AllowAnyHeader());
+options.AddPolicy("AllowBlazorWasm",
+policy => policy
+    .AllowAnyOrigin()
+    .AllowAnyMethod()
+    .AllowAnyHeader());
 });
-
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(); 
+#endregion
 
 var app = builder.Build();
 
-// Ensure database is created
+#region Database Intializer 
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<UserContext>();
     context.Database.EnsureCreated();
-}
+} 
+#endregion
 
-// Configure the HTTP request pipeline.
+#region MiddleWare
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
-
 app.UseCors("AllowBlazorWasm");
-
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
-app.MapControllers();
+app.MapControllers(); 
+#endregion
 
 app.Run();

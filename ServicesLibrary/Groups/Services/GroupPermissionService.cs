@@ -17,6 +17,7 @@ public class GroupPermissionService
     public async Task<Group?> GetGroupWithDetailsAsync(int groupId)
     {
         return await _context.Groups
+            .AsNoTracking()
             .Include(g => g.Permissions)
             .Include(g => g.Users)
             .FirstOrDefaultAsync(g => g.Id == groupId && !g.Deleted);
@@ -28,6 +29,7 @@ public class GroupPermissionService
     public async Task<List<Permission>> GetAllPermissionsAsync()
     {
         return await _context.Permissions
+            .AsNoTracking()
             .Where(p => !p.Deleted)
             .OrderBy(p => p.Name)
             .ToListAsync();
@@ -102,6 +104,7 @@ public class GroupPermissionService
     public async Task<List<Permission>> GetAvailablePermissionsForGroupAsync(int groupId)
     {
         var group = await _context.Groups
+            .AsNoTracking()
             .Include(g => g.Permissions)
             .FirstOrDefaultAsync(g => g.Id == groupId && !g.Deleted);
 
@@ -113,6 +116,7 @@ public class GroupPermissionService
         var assignedPermissionIds = group.Permissions.Select(p => p.Id).ToList();
 
         return await _context.Permissions
+            .AsNoTracking()
             .Where(p => !p.Deleted && !assignedPermissionIds.Contains(p.Id))
             .OrderBy(p => p.Name)
             .ToListAsync();

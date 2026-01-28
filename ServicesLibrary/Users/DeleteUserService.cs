@@ -10,40 +10,24 @@ public class DeleteUserService
 
     public DeleteUserService(UserContext context) => _context = context;
 
-    public async Task<User> ExecuteAsync(int userId)
+    public async Task<bool> ExecuteAsync(int userId)
     {
-        var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Id == userId && !u.Deleted);
-
-        ThrowExceptionIfUserNotFound(userId, user);
+        User user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId && !u.Deleted) 
+            ?? throw new InvalidOperationException($"User with ID {userId} not found or has already been deleted");
 
         MarkUserAsDeleted(user);
-
         await _context.SaveChangesAsync();
 
-        return user;
+        return true;
     }
 
 
     #region Private Functions
-
-    private static void MarkUserAsDeleted(User? user)
+    private static void MarkUserAsDeleted(User user)
     {
-        if (user is null)
-        {
-            throw new ArgumentNullException(nameof(user), "User is null.");
-        }
-
         user.Deleted = true;
         user.Active = false;
         user.UpdatedAt = DateTime.UtcNow;
     }
-    private static void ThrowExceptionIfUserNotFound(int userId, User? user)
-    {
-        if (user == null)
-        {
-            throw new InvalidOperationException($"User with ID {userId} not found or has already been deleted");
-        }
-    } 
     #endregion
 }
