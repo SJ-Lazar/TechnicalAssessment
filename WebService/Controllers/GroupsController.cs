@@ -14,87 +14,56 @@ public class GroupsController : ControllerBase
 {
     private readonly GroupPermissionService _groupPermissionService;
     private readonly UserContext _context;
-    private readonly ILogger<GroupsController> _logger;
 
     public GroupsController(
         GroupPermissionService groupPermissionService,
-        UserContext context,
-        ILogger<GroupsController> logger)
+        UserContext context)
     {
         _groupPermissionService = groupPermissionService;
         _context = context;
-        _logger = logger;
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<GroupDto>>> GetGroups()
-    {
-        try
-        {
-            var groups = await _context.Groups
-                .Where(g => !g.Deleted)
-                .Select(g => new GroupDto(g.Id, g.Name ?? string.Empty))
-                .ToListAsync();
-
-            return Ok(groups);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error getting groups");
-            return StatusCode(500, "An error occurred while retrieving groups");
-        }
-    }
+    public async Task<ActionResult<IEnumerable<GroupDto>>> GetGroups() =>
+        Ok(await _context.Groups
+            .Where(g => !g.Deleted)
+            .Select(g => new GroupDto(g.Id, g.Name ?? string.Empty))
+            .ToListAsync());
 
     [HttpGet("{id}")]
     public async Task<ActionResult<GroupDetailDto>> GetGroup(int id)
     {
-        try
-        {
-            var group = await _groupPermissionService.GetGroupWithDetailsAsync(id);
+        var group = await _groupPermissionService.GetGroupWithDetailsAsync(id);
 
-            if (group == null)
-                return NotFound();
+        if (group == null)
+            return NotFound();
 
-            var groupDto = new GroupDetailDto(
-                group.Id,
-                group.Name ?? string.Empty,
-                group.Active,
-                group.CreatedAt,
-                group.UpdatedAt,
-                group.Permissions.Select(p => new PermissionDto(p.Id, p.Name ?? string.Empty)).ToList(),
-                group.Users.Select(u => new UserDto(
-                    u.Id,
-                    u.Email ?? string.Empty,
-                    u.Active,
-                    u.CreatedAt,
-                    u.UpdatedAt,
-                    new List<GroupDto>()
-                )).ToList()
-            );
+        var groupDto = new GroupDetailDto(
+            group.Id,
+            group.Name ?? string.Empty,
+            group.Active,
+            group.CreatedAt,
+            group.UpdatedAt,
+            group.Permissions.Select(p => new PermissionDto(p.Id, p.Name ?? string.Empty)).ToList(),
+            group.Users.Select(u => new UserDto(
+                u.Id,
+                u.Email ?? string.Empty,
+                u.Active,
+                u.CreatedAt,
+                u.UpdatedAt,
+                new List<GroupDto>()
+            )).ToList()
+        );
 
-            return Ok(groupDto);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error getting group {GroupId}", id);
-            return StatusCode(500, "An error occurred while retrieving the group");
-        }
+        return Ok(groupDto);
     }
 
     [HttpGet("permissions")]
     public async Task<ActionResult<IEnumerable<PermissionDto>>> GetAllPermissions()
     {
-        try
-        {
-            var permissions = await _groupPermissionService.GetAllPermissionsAsync();
-            var permissionDtos = permissions.Select(p => new PermissionDto(p.Id, p.Name ?? string.Empty));
-            return Ok(permissionDtos);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error getting permissions");
-            return StatusCode(500, "An error occurred while retrieving permissions");
-        }
+        var permissions = await _groupPermissionService.GetAllPermissionsAsync();
+        var permissionDtos = permissions.Select(p => new PermissionDto(p.Id, p.Name ?? string.Empty));
+        return Ok(permissionDtos);
     }
 
     [HttpGet("{id}/available-permissions")]
@@ -109,11 +78,6 @@ public class GroupsController : ControllerBase
         catch (InvalidOperationException ex)
         {
             return NotFound(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error getting available permissions for group {GroupId}", id);
-            return StatusCode(500, "An error occurred while retrieving available permissions");
         }
     }
 
@@ -150,11 +114,6 @@ public class GroupsController : ControllerBase
         {
             return BadRequest(ex.Message);
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error adding permission to group {GroupId}", id);
-            return StatusCode(500, "An error occurred while adding permission to group");
-        }
     }
 
     [HttpDelete("{id}/permissions/{permissionId}")]
@@ -189,11 +148,6 @@ public class GroupsController : ControllerBase
         catch (InvalidOperationException ex)
         {
             return NotFound(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error removing permission from group {GroupId}", id);
-            return StatusCode(500, "An error occurred while removing permission from group");
         }
     }
 }
