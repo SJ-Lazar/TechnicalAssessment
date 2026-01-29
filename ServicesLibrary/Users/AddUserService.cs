@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ServicesLibrary.Groups.Dtos;
 using SharedLibrary.Contexts;
+using SharedLibrary.DTOs;
 using SharedLibrary.UserModels;
 
 namespace ServicesLibrary.Users;
@@ -16,8 +18,8 @@ public class AddUserService
     /// <param name="email">The email address for the new user. Cannot be null or empty.</param>
     /// <param name="groupIds">A list of group IDs to which the new user will be assigned. If null, the user will not be assigned to any
     /// groups.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains the newly created user.</returns>
-    public async Task<User> ExecuteAsync(string email, List<int>? groupIds = null)
+    /// <returns>A task that represents the asynchronous operation. The task result contains the newly created user DTO.</returns>
+    public async Task<UserDto> ExecuteAsync(string email, List<int>? groupIds = null)
     {
         ValidateEmail(email);
 
@@ -32,7 +34,7 @@ public class AddUserService
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
-        return user;
+        return MapToDto(user);
     }
 
     #region Private Functions
@@ -95,5 +97,14 @@ public class AddUserService
             }
         }
     }
+
+    private static UserDto MapToDto(User user) => new(
+        user.Id,
+        user.Email ?? string.Empty,
+        user.Active,
+        user.CreatedAt,
+        user.UpdatedAt,
+        user.Groups.Select(g => new GroupDto(g.Id, g.Name ?? string.Empty)).ToList()
+    );
     #endregion
 }

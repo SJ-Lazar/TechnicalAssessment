@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ServicesLibrary.Groups.Dtos;
 using SharedLibrary.Contexts;
+using SharedLibrary.DTOs;
 using SharedLibrary.UserModels;
 
 namespace ServicesLibrary.Users;
@@ -18,12 +20,12 @@ public class EditUserService
     /// among all non-deleted users.</param>
     /// <param name="groupIds">A list of group IDs to assign to the user, or null to leave group memberships unchanged.</param>
     /// <param name="active">The new active status to set for the user, or null to leave the status unchanged.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains the updated user entity.</returns>
-    /// <exception cref="ArgumentNullException">Thrown if no user with the specified userId exists or the user has been deleted.</exception>
-    public async Task<User> ExecuteAsync(int userId, string? email = null, List<int>? groupIds = null, bool? active = null)
+    /// <returns>A task that represents the asynchronous operation. The task result contains the updated user DTO.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if no user with the specified userId exists or the user has been deleted.</exception>
+    public async Task<UserDto> ExecuteAsync(int userId, string? email = null, List<int>? groupIds = null, bool? active = null)
     {
         var user = await _context.Users.Include(u => u.Groups)
-            .FirstOrDefaultAsync(u => u.Id == userId && !u.Deleted) ?? throw new ArgumentNullException($"User with ID {userId} not found or has been deleted");
+            .FirstOrDefaultAsync(u => u.Id == userId && !u.Deleted) ?? throw new InvalidOperationException($"User with ID {userId} not found or has been deleted");
 
         var emailExists = await _context.Users.AnyAsync(u => u.Email == email && u.Id != userId && !u.Deleted);
 
@@ -38,7 +40,7 @@ public class EditUserService
         user.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
 
-        return user;
+        return MapToDto(user);
     }
 
     #region Private Functions
@@ -105,5 +107,14 @@ public class EditUserService
             }
         }
     }
+
+    private static UserDto MapToDto(User user) => new(
+        user.Id,
+        user.Email ?? string.Empty,
+        user.Active,
+        user.CreatedAt,
+        user.UpdatedAt,
+        user.Groups.Select(g => new GroupDto(g.Id, g.Name ?? string.Empty)).ToList()
+    );
     #endregion
 }
