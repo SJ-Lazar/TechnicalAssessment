@@ -3,6 +3,7 @@
     <File Path=".editorconfig" />
     <File Path="ReadMe.txt" />
     <File Path="SolutionStructure.txt" />
+    <File Path="WebServiceAPI.md" />
   </Folder>
   <Project Path="DataAccess/SharedLibrary.csproj" Id="d088ead8-adc6-41e9-8411-7267df17f1fd" />
   <Project Path="ServicesLibrary/ServicesLibrary.csproj" Id="56240608-c810-432f-a946-aaa6bc176002" />

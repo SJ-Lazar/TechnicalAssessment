@@ -18,10 +18,9 @@ Database
  - Models 
 
  Shared Services 
- - 
+ - Application Services 
 
  Documentation
  - ReadMe Files
  - Software Architecture
  - API Documentation
- - User Guides
