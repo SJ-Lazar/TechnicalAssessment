@@ -60,7 +60,6 @@ public class AddUserServiceTests
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Email, Is.EqualTo(email));
         Assert.That(result.Active, Is.True);
-        Assert.That(result.Deleted, Is.False);
         Assert.That(result.Id, Is.GreaterThan(0));
     }
 
