@@ -84,7 +84,18 @@ public class UsersController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> DeleteUser(int id) => (await _deleteUserService.ExecuteAsync(id)) ? NoContent() : NotFound();
+    public async Task<ActionResult> DeleteUser(int id)
+    {
+        try
+        {
+            await _deleteUserService.ExecuteAsync(id);
+            return NoContent();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return NotFound(ex.Message);
+        }
+    }
 
     [HttpGet("groups")]
     public async Task<ActionResult<IEnumerable<GroupDto>>> GetGroups() => Ok(await _getGroupService.ExecuteAsync());

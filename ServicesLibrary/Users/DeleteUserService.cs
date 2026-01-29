@@ -10,15 +10,15 @@ public class DeleteUserService
 
     public DeleteUserService(UserContext context) => _context = context;
 
-    public async Task<bool> ExecuteAsync(int userId)
+    public async Task<User> ExecuteAsync(int userId)
     {
-        User user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId && !u.Deleted) 
+        User user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId && !u.Deleted)
             ?? throw new InvalidOperationException($"User with ID {userId} not found or has already been deleted");
 
         MarkUserAsDeleted(user);
         await _context.SaveChangesAsync();
 
-        return true;
+        return user;
     }
 
 

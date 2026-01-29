@@ -112,6 +112,7 @@ public class EditUserService
         user.Id,
         user.Email ?? string.Empty,
         user.Active,
+        user.Deleted,
         user.CreatedAt,
         user.UpdatedAt,
         user.Groups.Select(g => new GroupDto(g.Id, g.Name ?? string.Empty)).ToList()

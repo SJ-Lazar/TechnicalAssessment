@@ -49,9 +49,10 @@ public class GroupsController : ControllerBase
                 u.Id,
                 u.Email ?? string.Empty,
                 u.Active,
+                    u.Deleted,
                 u.CreatedAt,
                 u.UpdatedAt,
-                new List<GroupDto>()
+                    new List<GroupDto>()
             )).ToList()
         );
 
@@ -102,6 +103,7 @@ public class GroupsController : ControllerBase
                     u.Id,
                     u.Email ?? string.Empty,
                     u.Active,
+                    u.Deleted,
                     u.CreatedAt,
                     u.UpdatedAt,
                     new List<GroupDto>()
@@ -137,6 +139,7 @@ public class GroupsController : ControllerBase
                     u.Id,
                     u.Email ?? string.Empty,
                     u.Active,
+                    u.Deleted,
                     u.CreatedAt,
                     u.UpdatedAt,
                     new List<GroupDto>()
